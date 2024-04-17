@@ -7,10 +7,10 @@ console.log(process.env);
 const app = express()
 
 
-const Port = 3000
+const Port = process.env.PORT || 3000
 
 app.listen(Port, () => {
-    console.log('port open at 3000');
+    console.log(`Started server at ${Port}`);
 })
 
 
