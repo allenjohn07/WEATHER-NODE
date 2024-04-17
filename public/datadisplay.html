@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display the Data</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+        <style>
+            body {
+                background-color: #f4f4f4;
+            }
+        
+            .container {
+                border-radius: 10px;
+                width: 50%;
+                font-family: Arial, sans-serif;
+                margin: 50px auto;
+                padding: 0;
+                text-align: center;
+                display: flex;
+                background-color: #fff;
+                align-items: center;
+                justify-content: center;
+                flex-direction: column;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+        
+            h1 {
+                color: #333;
+            }
+        
+            a {
+                color: #333;
+                text-decoration: none;
+            }
+        
+            a:hover {
+                text-decoration: underline;
+            }
+        
+            #checkinMap {
+                height: 240px;
+                width: 100%;
+                margin: 10px 0px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+        
+            /* Media query for smaller screens */
+            @media (max-width: 768px) {
+                .container {
+                    width: 80%; /* Adjust width for smaller screens */
+                }
+        
+                #checkinMap {
+                    height: 200px; /* Adjust map height for smaller screens */
+                }
+            }
+        </style>
+        
+</head>
+
+<body style="display: flex;align-items: center;justify-content: center;">
+    <div class="container">
+        <h1>Display the Data</h1>
+        <a href="/">Go back</a>
+        <div id="checkinMap"></div>
+    </div>
+    <script>
+        const map = L.map('checkinMap').setView([0, 0], 1)
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        GetData()
+        async function GetData() {
+            const response = await fetch('/api')
+            const data = await response.json()
+            console.log(data);
+
+            for (item of data) {
+                const marker = L.marker([item.lat, item.lon]).addTo(map)
+                const temperature = (1.8 * (item.weather.main.temp - 273) + 32).toFixed(2)
+
+                let txt = `The Weather here at ${item.lat}&deg;,${item.lon}&deg; is ${item.weather.weather[0].description} with a temperature of ${temperature}&deg; F.`
+                if (item.air.value < 0) {
+                    txt += 'No Air Quality Reading'
+                } else {
+                    txt += `The Air Pollution is ${item.air.value} ${item.air.unit}`
+                }
+
+                marker.bindPopup(txt)
+            }
+        }
+    </script>
+</body>
+
+</html>

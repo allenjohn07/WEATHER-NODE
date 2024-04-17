@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Weather Here</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+    
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+    
+        h1 {
+            margin-top: 0;
+            color: #333;
+        }
+    
+        a {
+            color: #333;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+    
+        a:hover {
+            text-decoration: underline;
+        }
+    
+        .weather-info {
+            background-color: #4caf50;
+            color: #fff;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 20px;
+        }
+    
+        /* Media query for smaller screens */
+        @media (max-width: 768px) {
+            .container {
+                max-width: 80%; /* Adjust max-width for smaller screens */
+            }
+        }
+    </style>
+    
+</head>
+
+<body>
+    <script>
+        if ("geolocation" in navigator) {
+            console.log('Geolocation is available');
+            navigator.geolocation.getCurrentPosition(async position => {
+                let lat, lon, weather, air;
+                lat = position.coords.latitude
+                lon = position.coords.longitude
+                document.getElementById('latitude').textContent = lat
+                document.getElementById('longitude').textContent = lon
+                const api_url = `weather/${lat},${lon}`
+                const response = await fetch(api_url)
+                const json = await response.json()
+                weather = json.weather
+                try {
+                    document.getElementById('summary').textContent = weather.weather[0].description
+                    const temperature = (1.8 * (weather.main.temp - 273) + 32).toFixed(2);
+                    document.getElementById('temperature').textContent = temperature
+                } catch (error) {
+                    document.getElementById('summary').textContent = '"No reading"'
+                    document.getElementById('temperature').textContent = '"No reading"'
+
+                }
+                try {
+                    air = json.air_quality.results[0].measurements[0]
+                    document.getElementById('value').textContent = air.value
+                    document.getElementById('unit').textContent = air.unit
+                } catch (error) {
+                    air = { value: -1 }
+                    document.getElementById('value').textContent = '"No reading"'
+
+                }
+
+                const data = { lat, lon, weather, air }
+                const options = {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                }
+                const db_response = await fetch('/api', options)
+                const db_json = await db_response.json()
+                console.log(db_json);
+                console.log(json)
+
+            })
+        } else {
+            console.log('Geolocation is not available');
+        }
+
+
+    </script>
+    <div class="container">
+        <h1>The Weather Here</h1>
+        <a href="/">Check in</a> <a href="datadisplay.html">View Checkins</a>
+        <div class="weather-info">
+            <p>
+                Latitude: <span id="latitude"></span>&deg;
+                Longitude: <span id="longitude"></span>&deg;
+            </p>
+            <p>The weather here is <span id="summary"></span> with a temperature of <span id="temperature"></span>&deg;
+                Fahrenheit. </p>
+            <p>The Air Quality here is <span id="value"></span> <span id="unit"></span> </p>
+        </div>
+</body>
+
+</html>
